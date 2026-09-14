@@ -85,7 +85,3 @@ gantt
 - **Fase 2 (Meses 6 a 12):** Construção da camada de abstração (APIs) sobre os silos de empréstimos e unificação do Motor de Risco de Crédito.
 - **Fase 3 (Meses 12 a 18):** Orquestração de fluxos transversais (ex: automação de quitação de parcelas usando saldo) e mitigação/migração opcional de legados obsoletos.
 
-## Próximos Passos
-1. Coleta de assinaturas do Comitê Executivo para homologação do direcionamento da Conta de Pagamentos.
-2. Abertura imediata do processo de RFI/RFP focado na seleção do Core Ledger Cloud-Native/API-First de mercado.
-3. Alocação das equipes de arquitetura de solução para o detalhamento técnico e mapeamento dos contratos das APIs de abstração de crédito.
