@@ -71,6 +71,60 @@ A transição será executada em três horizontes lógicos para evitar disrupç�
 * **Fase 2: Desacoplamento & Abstração (Meses 6 a 12):** Construção da camada de abstração (APIs) sobre os silos de empréstimo (CDC, Cartões, Pessoal); Unificação do Motor de Risco de Crédito em microsserviço único. *Resultado:* Eliminação parcial dos silos.
 * **Fase 3: Ecossistema Unificado (Meses 12 a 18):** Orquestração de fluxos transversais (Ex: usar saldo da conta para quitar parcelas automaticamente); Migração opcional de sistemas legados obsoletos. *Resultado:* Redução do Time-to-Market para novos produtos em até 70%.
 
+
+## 5. Plano de Migração e Desenho de Arquitetura (Roadmap)
+A transição das capacidades em silos atuais para a arquitetura unificada baseada em microsserviços e próxima geração de core será executada em três horizontes lógicos para evitar disrupções nas operações correntes:
+
+```mermaid
+architecture-beta
+    group client(Internet / Mobile)
+    group gateway(Camada de Experiência)
+    group mesh(Camada de Integração)
+    group storage(Camada Core e Registro)
+
+    element app(cloud) in client
+    element api_gw(server) in gateway
+    
+    element ms_conta(cog) in mesh
+    element ms_risco(cog) in mesh
+    element api_abs(cog) in mesh
+    
+    element new_ledger(database) in storage
+    element legacy_loan(database) in storage
+
+    app   --> api_gw
+    api_gw --> ms_conta
+    api_gw --> ms_risco
+    api_gw --> api_abs
+    
+    ms_conta   --> new_ledger
+    api_abs    --> legacy_loan
+    ms_risco   -.-> api_abs
+```
+
+### 5.1 Detalhamento das Fases de Transição
+
+#### 🗺️ Fase 1: Fundação & Novo Produto (Meses 1 a 6)
+* **Escopo Técnico:** Aquisição e deploy do Core Ledger via SaaS/Cloud; Criação do Microsserviço de Conta de Pagamentos; Implementação do API Gateway corporativo.
+* **Impacto:** Lançamento da Conta de Pagamentos, criação do canal unificado de entrada e início da captura de engajamento diário.
+
+#### 🗺️ Fase 2: Desacoplamento & Abstração (Meses 6 a 12)
+* **Escopo Técnico:** Construção da camada de abstração (APIs) sobre os silos de empréstimo (CDC, Cartões, Pessoal); Unificação do Motor de Risco de Crédito em microsserviço único.
+* **Impacto:** Eliminação parcial dos silos. Os produtos legados passam a expor suas capacidades de forma padronizada para reuso imediato.
+
+#### 🗺️ Fase 3: Ecossistema Unificado (Meses 12 a 18)
+* **Escopo Técnico:** Orquestração de fluxos transversais (Ex: usar saldo da conta para quitar parcelas de empréstimos automaticamente); Migração opcional de sistemas legados obsoletos para o novo Core.
+* **Impacto:** Cadeia de valor otimizada. Redução do Time-to-Market para novos produtos em até 70% com interoperabilidade completa.
+
+### Recomendações Imediatas ao Comitê:
+1. Aprovação formal do comitê executivo para a priorização do produto de Conta de Pagamentos.
+2. Início do processo de RFI/RFP para seleção da plataforma de mercado de Core Ledger Cloud-Native/API-First.
+3. Alocação do time de arquitetura de solução para detalhamento do desenho técnico das APIs de abstração do legado de crédito.
+
+---
+*CONFIDENCIAL - Uso Interno | Banco Paulista de Expansão*
+
+
 ### Recomendações Imediatas ao Comitê:
 1. Aprovação formal do comitê executivo para a priorização do produto de Conta de Pagamentos.
 2. Início do processo de RFI/RFP para seleção da plataforma de mercado de Core Ledger Cloud-Native/API-First.
