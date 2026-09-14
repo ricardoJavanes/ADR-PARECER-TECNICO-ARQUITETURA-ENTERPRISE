@@ -64,42 +64,45 @@ Os produtos de empréstimo existentes passarão a orbitar ao redor da nova Conta
 
 ---
 
-## 5. Plano de Migração e Próximos Passos (Roadmap)
-A transição será executada em três horizontes lógicos para evitar disrupções nas operações correntes:
-
-* **Fase 1: Fundação & Novo Produto (Meses 1 a 6):** Aquisição e deploy do Core Ledger via SaaS/Cloud; Criação do Microsserviço de Conta de Pagamentos; Implementação do API Gateway corporativo. *Resultado:* Lançamento da conta e início do engajamento.
-* **Fase 2: Desacoplamento & Abstração (Meses 6 a 12):** Construção da camada de abstração (APIs) sobre os silos de empréstimo (CDC, Cartões, Pessoal); Unificação do Motor de Risco de Crédito em microsserviço único. *Resultado:* Eliminação parcial dos silos.
-* **Fase 3: Ecossistema Unificado (Meses 12 a 18):** Orquestração de fluxos transversais (Ex: usar saldo da conta para quitar parcelas automaticamente); Migração opcional de sistemas legados obsoletos. *Resultado:* Redução do Time-to-Market para novos produtos em até 70%.
-
-
 ## 5. Plano de Migração e Desenho de Arquitetura (Roadmap)
 A transição das capacidades em silos atuais para a arquitetura unificada baseada em microsserviços e próxima geração de core será executada em três horizontes lógicos para evitar disrupções nas operações correntes:
 
 ```mermaid
-architecture-beta
-    group client(Internet / Mobile)
-    group gateway(Camada de Experiência)
-    group mesh(Camada de Integração)
-    group storage(Camada Core e Registro)
+graph TD
+    %% Grupos para organização visual
+    subgraph Client [Canais / Clientes]
+        App[Internet / Mobile App]
+    end
 
-    element app(cloud) in client
-    element api_gw(server) in gateway
-    
-    element ms_conta(cog) in mesh
-    element ms_risco(cog) in mesh
-    element api_abs(cog) in mesh
-    
-    element new_ledger(database) in storage
-    element legacy_loan(database) in storage
+    subgraph Gateway [Camada de Experiência]
+        API_GW[API Gateway Corporativo]
+    end
 
-    app   --> api_gw
-    api_gw --> ms_conta
-    api_gw --> ms_risco
-    api_gw --> api_abs
+    subgraph Mesh [Camada de Integração]
+        MS_Conta[MS Conta de Pagamentos]
+        MS_Risco[MS Motor de Risco]
+        API_Abs[API de Abstração do Legado]
+    end
+
+    subgraph Storage [Camada Core e Registro]
+        New_Ledger[(Novo Core Ledger Cloud-Native)]
+        Legacy_Loan[(Motores de Empréstimo Legados)]
+    end
+
+    %% Fluxos e Conexões
+    App --> API_GW
     
-    ms_conta   --> new_ledger
-    api_abs    --> legacy_loan
-    ms_risco   -.-> api_abs
+    API_GW --> MS_Conta
+    API_GW --> MS_Risco
+    API_GW --> API_Abs
+    
+    MS_Conta --> New_Ledger
+    API_Abs --> Legacy_Loan
+    MS_Risco -.-> API_Abs
+
+    %% Estilização para destacar o Novo vs Legado
+    style New_Ledger fill:#1f6feb,stroke:#58a6ff,stroke-width:2px,color:#fff
+    style Legacy_Loan fill:#21262d,stroke:#30363d,stroke-dasharray: 5 5,color:#8b949e
 ```
 
 ### 5.1 Detalhamento das Fases de Transição
@@ -110,22 +113,13 @@ architecture-beta
 
 #### 🗺️ Fase 2: Desacoplamento & Abstração (Meses 6 a 12)
 * **Escopo Técnico:** Construção da camada de abstração (APIs) sobre os silos de empréstimo (CDC, Cartões, Pessoal); Unificação do Motor de Risco de Crédito em microsserviço único.
-* **Impacto:** Eliminação parcial dos silos. Os produtos legados passam a expor suas capacidades de forma padronizada para reuso imediato.
+* **Impacto:** Eliminação parcial dos silos. Os produtos legados passam a expor suas capacidades de forma padronizada para reuso imediato pelas novas frentes digitais.
 
 #### 🗺️ Fase 3: Ecossistema Unificado (Meses 12 a 18)
 * **Escopo Técnico:** Orquestração de fluxos transversais (Ex: usar saldo da conta para quitar parcelas de empréstimos automaticamente); Migração opcional de sistemas legados obsoletos para o novo Core.
-* **Impacto:** Cadeia de valor otimizada. Redução do Time-to-Market para novos produtos em até 70% com interoperabilidade completa.
+* **Impacto:** Cadeia de valor otimizada. Redução do Time-to-Market para novos produtos em até 70% com interoperabilidade completa dos sistemas de back-office.
 
-### Recomendações Imediatas ao Comitê:
-1. Aprovação formal do comitê executivo para a priorização do produto de Conta de Pagamentos.
-2. Início do processo de RFI/RFP para seleção da plataforma de mercado de Core Ledger Cloud-Native/API-First.
-3. Alocação do time de arquitetura de solução para detalhamento do desenho técnico das APIs de abstração do legado de crédito.
-
----
-*CONFIDENCIAL - Uso Interno | Banco Paulista de Expansão*
-
-
-### Recomendações Imediatas ao Comitê:
+### 5.2 Recomendações Imediatas ao Comitê
 1. Aprovação formal do comitê executivo para a priorização do produto de Conta de Pagamentos.
 2. Início do processo de RFI/RFP para seleção da plataforma de mercado de Core Ledger Cloud-Native/API-First.
 3. Alocação do time de arquitetura de solução para detalhamento do desenho técnico das APIs de abstração do legado de crédito.
