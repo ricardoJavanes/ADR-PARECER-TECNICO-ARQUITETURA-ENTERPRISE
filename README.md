@@ -1,91 +1,86 @@
-# ADR 001: Modernização do Core Bancário e Expansão de Portfólio do Banco Paulista de Expansão
+# PARECER TÉCNICO DE ARQUITETURA ENTERPRISE
+**Estratégia de Expansão de Portfólio, Engajamento e Modernização do Core Bancário**
 
-## Status
-Aprovado (Direcionamento Estratégico)
+* **Preparado por:** Time de Enterprise Architecture (EA)
+* **Destinatários:** C-Level, CTO e CIO
+* **Data:** Setembro de 2026
+* **Status:** Recomendação Oficial (Direcionamento Estratégico)
+* **Escopo:** Avaliação de Conta de Pagamentos vs. Cashback, Plataforma de Core Bancário e Quebra de Silos Legados.
 
-## Contexto
-O Banco Paulista de Expansão precisa expandir seu portfólio de produtos, aumentar o engajamento diário dos clientes e modernizar seus sistemas core. O cenário atual apresenta as seguintes restrições e desafios de engenharia:
-- **Silos Verticais:** Os produtos de Crédito e Empréstimos (CDC, Pessoal, Consignado, Garantias) rodam em silos isolados, com alto custo de manutenção e zero reaproveitamento de motores de crédito.
-- **Falta de Funding:** A ausência de uma conta transacional própria exige captação de recursos a custos mais elevados.
-- **Risco de Big Bang:** Uma substituição integral do core legado por um Core tradicional monolítico paralisaria novas entregas de negócio e geraria um projeto de alto risco com duração estimada de 3 a 5 anos.
+---
 
-Duas frentes de produto foram avaliadas para tração de engajamento: Conta de Pagamentos versus ferramentas de Cashback.
+## 1. Sumário Executivo & Decisão Recomendada
+Este parecer técnico apresenta o direcionamento estratégico do time de Enterprise Architecture para a tomada de decisão do C-Level referente ao aumento de portfólio, engajamento e evolução da arquitetura corporativa. Após análise holística das capacidades e restrições do banco, apresentamos as seguintes decisões macro estruturadas:
 
-## Decisão
-Decidimos adotar uma estratégia de **Next-Gen Core focada em Ledger Modular** e priorizar o lançamento da **Conta de Pagamentos**. A arquitetura TO-BE será implementada sob as seguintes diretrizes técnicas:
+* **Produto Recomendado: Conta de Pagamentos.** A EA recomenda a priorização da Conta de Pagamentos sobre o Cashback. A conta atua como um hub gravitacional de engajamento diário e é a base mandatória para a cross-sell efetiva dos produtos de crédito existentes.
+* **Abordagem do Core Bancário: Modular de Nova Geração (Next-Gen Core) focado em Ledger.** A EA desaconselha a aquisição de um Core Bancário tradicional monolítico que substitua todo o legado de uma vez. Em vez disso, recomenda-se a aquisição de uma plataforma moderna de Core Ledger baseada em microsserviços via APIs para suportar unicamente a Conta de Pagamentos e, progressivamente, expor os produtos de empréstimo através de uma camada de capacidades unificadas.
+* **Estilo Arquitetural Preservado: Microsserviços.** O novo ecossistema respeitará estritamente a arquitetura descentralizada existente, quebrando os silos operacionais através de um modelo de Bounded Contexts e barramento de eventos (Event-Driven Architecture).
 
-1. **Isolamento de Escopo do Ledger:** Adquiri-se uma plataforma de mercado moderna (*SaaS/Cloud-Native / API-First*) baseada em microsserviços via APIs exclusivamente para gerenciar saldos e lançamentos da nova Conta de Pagamentos.
-2. **Preservação de Motores Legados:** Os produtos de empréstimos continuarão operando temporariamente em seus motores atuais. Eles serão encapsulados por uma camada unificada de APIs de Integração para expor suas capacidades de forma padronizada.
-3. **Abordagem Arquitetural:** Manutenção do estilo descentralizado por microsserviços, quebrando os silos operacionais através de contextos delimitados (*Bounded Contexts*) e arquitetura orientada a eventos (*Event-Driven Architecture*).
-4. **Priorização de Negócio:** Focar na Conta de Pagamentos em detrimento do Cashback pelas capacidades de geração de *funding* (depósitos de baixo custo), maior frequência de uso transacional (Pix/boletos) e facilidade de *cross-sell* estruturado para a carteira de crédito.
+---
 
-```mermaid
-graph TD
-    subgraph Camada de Experiencia
-        App[Aplicativo / Internet Banking] --> Gateway[API Gateway Corporativo]
-    end
+## 2. Mapa de Problemas de Negócios (Subdomínios DDD)
+Para organizar a complexidade atual e o novo cenário, dividimos o banco sob a ótica de Domain-Driven Design (DDD), permitindo identificar onde reside o valor diferencial e as ineficiências operacionais:
 
-    subgraph Camada de Integracao e Orquestraçao
-        Gateway --> MS_Conta[MS Conta de Pagamentos]
-        Gateway --> MS_Risco[MS Motor de Risco Unificado]
-        Gateway --> API_Abstracao[Camada de APIs de Abstração do Legado]
-    end
+| Subdomínio | Classificação | Situação Atual & Impacto na Cadeia |
+| :--- | :--- | :--- |
+| **Crédito e Empréstimos** *(CDC, Pessoal, Consignado, Garantias)* | CORE DOMAIN (Diferencial) | Construído em silos verticais isolados. Alto custo de manutenção, sem reaproveitamento de componentes de cálculo ou motores de crédito, impactando severamente o Time-to-Market de novos produtos. |
+| **Conta de Pagamentos** *(Novo Produto solicitado)* | CORE DOMAIN (Alvo) | Inexistente. Irá atuar como principal ponto de contato e atração de depósitos de baixo custo (funding) para alavancar a operação de crédito. |
+| **Cashback e Parcerias** *(Produto Alternativo)* | SUPPORTING (Suporte) | Gera engajamento, mas depende de transacionalidade prévia. Isolado, não resolve o problema estrutural de retenção ou funding do banco. |
+| **Core Transacional / Ledger** *(Saldos e Lançamentos)* | GENERIC (Genérico) | Inexistente para contas. A provocação do CTO faz sentido ao buscar uma plataforma de mercado (SaaS/Cloud-Native) para este fim genérico, liberando a engenharia interna para focar no Core Domain. |
 
-    subgraph Camada Core e Registro
-        MS_Conta -->|Contabilidade Transacional / SaaS| Core_Ledger[(Novo Core Ledger Cloud-Native)]
-        API_Abstracao -->|CDC / Pessoal / Consignado| Motores_Credito[(Motores de Empréstimo Legados)]
-    end
+---
 
-    style Core_Ledger fill:#bbf,stroke:#333,stroke-width:2px
-    style Motores_Credito fill:#eee,stroke:#999,stroke-dasharray: 5 5
-```
+## 3. Justificativa e Lastreio da Tomada de Decisão
+A escolha da Conta de Pagamentos e a estratégia para o Core Bancário baseiam-se em robustos pilares de arquitetura e viabilidade de negócio:
 
-## Mapeamento de Domínios (DDD)
-A divisão estratégica do subdomínios sob a ótica de Domain-Driven Design (DDD) fica estabelecida como:
-- **Crédito e Empréstimos:** *Core Domain (Diferencial)* -> Onde reside o valor proprietário do banco.
-- **Conta de Pagamentos:** *Core Domain (Alvo)* -> Principal ponto de contato e atração de depósitos.
-- **Core Transacional / Ledger:** *Generic Subdomain* -> Tratado como commodity de mercado via SaaS.
-- **Cashback e Parcerias:** *Supporting Subdomain* -> Despriorizado no plano atual.
+### Por que Conta de Pagamentos e não Cashback?
+1. **Geração de Funding:** A conta de pagamentos permite a captação de depósitos à vista. Esse capital reduz drasticamente o custo de captação (funding) do banco, aumentando a margem líquida (spread) das operações de empréstimos, que são o atual motor financeiro da empresa.
+2. **Frequência de Uso (Engajamento Real):** Clientes usam cashback pontualmente. A conta corrente/pagamento é utilizada diariamente (Pix, pagamento de boletos, transferências), criando uma volumetria de dados de comportamento essencial para refinar os modelos de score de crédito do banco.
+3. **Prontidão para Cross-Sell:** É infinitamente mais natural ofertar um Crédito Consignado ou Pessoal para quem já possui movimentação e saldo no banco do que para um usuário que apenas consome pontos de cashback externos.
 
-## Consequências
+### Lastreio sobre a plataforma de Core Bancário (Visão CTO):
+A provocação do CTO é válida, mas requer um ajuste de escopo arquitetural. Substituir o legado inteiro por um Core tradicional geraria um projeto de alto risco ('Big Bang') de 3 a 5 anos. A recomendação de EA é a aquisição de um Core Ledger Cloud-Native / API-First unicamente para gerenciar o saldo e os lançamentos da nova Conta de Pagamentos. Os produtos de empréstimos legados continuarão rodando temporariamente nos seus motores atuais, mas passarão a interagir com o ecossistema através de uma camada unificada de APIs de Integração.
 
-### Positivas (Benefícios)
-- **Time-to-Market Acelerado:** Redução drástica do risco do projeto ao evitar a abordagem "Big Bang". O Time-to-Market para novos produtos será reduzido em até 70% no longo prazo.
-- **Geração de Funding:** Captura de depósitos à vista de baixo custo para alavancar a margem líquida (*spread*) das operações de crédito.
-- **Foco da Engenharia:** Engenharia interna liberada para atuar no diferencial competitivo do banco (*Core Domain* de Crédito) enquanto delega a *commodity* de ledger para uma plataforma especializada.
-- **Enriquecimento de Dados:** Volumetria de uso diário (Pix, boletos) gera massa crítica de dados para refinar os modelos de score de crédito.
+---
 
-### Negativas (Trade-offs e Riscos)
-- **Complexidade de Integração:** Exige esforço imediato no desenho de uma malha robusta de microsserviços de negócio (Camada de Integração e Orquestração) para garantir a interoperabilidade entre os sistemas novos e antigos.
-- **Dualidade de Ambientes:** Manutenção temporária de infraestruturas híbridas (motores legados locais coexistindo com o Core Ledger na nuvem).
+## 4. Mapa de Capacidades de Negócios e Classificações
+Abaixo estruturamos o Mapa de Capacidades corporativo sob o modelo de arquitetura TO-BE, demonstrando a classificação de criticidade e agrupamento funcional de cada uma para eliminar os silos atuais:
 
-## Roadmap de Execução Transicional
+| Grupo Funcional | Capacidade de Negócio (Business Capability) | Classificação | Estratégia de Integração / Evolução |
+| :--- | :--- | :--- | :--- |
+| **Customer Facing & Channels** | Gestão de Identidade e Onboarding <br> Movimentação Digital (Pix/TED) | Diferencial / Crítica | Unificada via Microsserviço de Canais. O onboarding da conta serve para reaproveitar no crédito. |
+| **Product Management** | Ciclo de Vida de Empréstimos (Legado) | Core Operacional | Encapsular o legado em APIs estruturadas. |
+| **Product Management** | Ciclo de Vida de Depósitos/Pagamentos | Novo Core Ledger | Centralizar depósitos na nova plataforma de mercado comprada. |
+| **Risk & Ledger (Back-Office)** | Motor de Análise de Risco de Crédito | Estratégica | Unificar os motores de análise em um microsserviço compartilhado. |
+| **Risk & Ledger (Back-Office)** | Contabilidade Transacional (Ledger) | Commodity Altamente Crítica | Usar o novo Core para o Ledger genérico. |
 
-```mermaid
-gantt
-    title Cronograma de Transição de Arquitetura (18 Meses)
-    dateFormat  X
-    axisFormat %d
+---
 
-    section Fase 1: Fundação
-    Deploy Core Ledger SaaS            :active, p1, 0, 6
-    Criar MS Conta de Pagamentos      :active, p2, 0, 6
-    Implementar API Gateway           :active, p3, 0, 6
+## 5. Cadeia de Valor Corporativa & Interoperabilidade
+Para eliminar o impacto negativo dos silos na cadeia de valor, a arquitetura TO-BE redesenha o fluxo operacional agrupando capacidades transversais de forma que os produtos de empréstimo existentes orbitem ao redor da nova Conta de Pagamentos.
 
-    section Fase 2: Desacoplamento
-    APIs sobre Silos de Empréstimo    :p4, 6, 12
-    Unificação do Motor de Risco      :p5, 6, 12
+### Agrupamentos Funcionais Transversais Propostos:
+1. **Camada de Experiência (Experiencia Unificada):** Apps e Internet Banking conectados a um API Gateway centralizado, criando a eliminação dos silos de canais dos empréstimos.
+2. **Camada de Integração e Orquestração (Microsserviços de Negócio):** Componentes reutilizáveis como 'Motor de Crédito Unificado', 'Originação de Propostas' e 'Gestão de Limites'. Qualquer novo produto consome os mesmos blocos de arquitetura.
+3. **Camada Core e Registro:** Divisão clara entre o legado de crédito encapsulado por APIs e o novo Core Ledger comprado focado exclusivamente em depósitos e transações de pagamento.
 
-    section Fase 3: Ecossistema Unificado
-    Orquestração Transversal          :p6, 12, 18
-    Migração de Legados Obsoletos     :p7, 12, 18
-```
+---
 
-- **Fase 1 (Meses 1 a 6):** Foco em deploy do Core Ledger via SaaS/Cloud, criação do microsserviço de conta e implementação do API Gateway.
-- **Fase 2 (Meses 6 a 12):** Construção da camada de abstração (APIs) sobre os silos de empréstimos e unificação do Motor de Risco de Crédito.
-- **Fase 3 (Meses 12 a 18):** Orquestração de fluxos transversais (ex: automação de quitação de parcelas usando saldo) e mitigação/migração opcional de legados obsoletos.
+## 6. Plano de Migração de Arquitetura (Roadmap Estratégico)
+A transição das capacidades em silos atuais para a arquitetura unificada baseada em microsserviços e próxima geração de core será executada em três horizontes lógicos para evitar disrupções nas operações correntes:
 
-## Próximos Passos
-1. Coleta de assinaturas do Comitê Executivo para homologação do direcionamento da Conta de Pagamentos.
-2. Abertura imediata do processo de RFI/RFP focado na seleção do Core Ledger Cloud-Native/API-First de mercado.
-3. Alocação das equipes de arquitetura de solução para o detalhamento técnico e mapeamento dos contratos das APIs de abstração de crédito.
+| Fase / Horizonte | Foco de Entrega (Escopo) | Resultados de Arquitetura e Negócio |
+| :--- | :--- | :--- |
+| **Fase 1: Fundação & Novo Produto** <br> *(Meses 1 a 6)* | • Aquisição e deploy do Core Ledger via SaaS/Cloud. <br> • Criação do Microsserviço de Conta de Pagamentos. <br> • Implementação do API Gateway corporativo. | Lançamento da Conta de Pagamentos. <br> Criação do canal unificado de entrada. <br> Início da captura de engajamento diário. |
+| **Fase 2: Desacoplamento & Abstração** <br> *(Meses 6 a 12)* | • Construção da camada de abstração (APIs) sobre os silos de empréstimo (CDC, Cartões, Pessoal). <br> • Unificação do Motor de Risco de Crédito em microsserviço único. | Eliminação parcial dos silos. Os produtos legados passam a expor suas capacidades de forma padronizada para reuso imediato. |
+| **Fase 3: Ecossistema Unificado** <br> *(Meses 12 a 18)* | • Orquestração de fluxos transversais (Ex: usar saldo da conta para quitar parcelas de empréstimos automaticamente). <br> • Migração opcional de sistemas legados obsoletos para o novo Core. | Cadeia de valor otimizada. Redução do Time-to-Market para novos produtos em até 70%. Interoperabilidade completa. |
+
+---
+
+## 7. Próximos Passos recomendados ao Comitê
+1. Aprovação formal do comitê executivo para a priorização do produto de Conta de Pagamentos.
+2. Início do processo de RFI/RFP para seleção da plataforma de mercado de Core Ledger Cloud-Native/API-First.
+3. Alocação do time de arquitetura de solução para detalhamento do desenho técnico das APIs de abstração do legado de crédito.
+
+---
+*CONFIDENCIAL - Uso Interno | Banco Paulista de Expansão | Página 5 de 5*
