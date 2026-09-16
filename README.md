@@ -4,6 +4,7 @@
 * **Status:** Aprovado (Recomendação Oficial / Direcionamento Estratégico)
 * **Data:** Setembro de 2026
 * **Preparado por:** Time de Enterprise Architecture (EA)
+* **Arquiteto responsável:** Ricardo Almeida
 * **Destinatários:** C-Level, CTO e CIO
 * **Escopo:** Avaliação de Conta de Pagamentos vs. Cashback, Plataforma de Core Bancário e Quebra de Silos Legados.
 
