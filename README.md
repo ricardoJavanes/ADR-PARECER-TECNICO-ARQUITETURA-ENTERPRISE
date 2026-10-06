@@ -68,7 +68,7 @@ Os produtos de empréstimo existentes passarão a orbitar ao redor da nova Conta
 ## 5. Plano de Migração e Desenho de Arquitetura (Roadmap)
 A transição das capacidades em silos atuais para a arquitetura unificada baseada em microsserviços e próxima geração de core será executada em três horizontes lógicos para evitar disrupções nas operações correntes:
 
-![Diagrama C4 Model Agnóstico](C4.png)
+![Diagrama C4 Model Agnóstico](C4.jpg)
 
 
 ### 5.1 Detalhamento das Fases de Transição
