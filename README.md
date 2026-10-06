@@ -68,43 +68,8 @@ Os produtos de empréstimo existentes passarão a orbitar ao redor da nova Conta
 ## 5. Plano de Migração e Desenho de Arquitetura (Roadmap)
 A transição das capacidades em silos atuais para a arquitetura unificada baseada em microsserviços e próxima geração de core será executada em três horizontes lógicos para evitar disrupções nas operações correntes:
 
-```mermaid
-graph TD
-    %% Grupos para organização visual
-    subgraph Client [Canais / Clientes]
-        App[Internet / Mobile App]
-    end
+![Diagrama C4 Model Agnóstico](C4.png)
 
-    subgraph Gateway [Camada de Experiência]
-        API_GW[API Gateway Corporativo]
-    end
-
-    subgraph Mesh [Camada de Integração]
-        MS_Conta[MS Conta de Pagamentos]
-        MS_Risco[MS Motor de Risco]
-        API_Abs[API de Abstração do Legado]
-    end
-
-    subgraph Storage [Camada Core e Registro]
-        New_Ledger[(Novo Core Ledger Cloud-Native)]
-        Legacy_Loan[(Motores de Empréstimo Legados)]
-    end
-
-    %% Fluxos e Conexões
-    App --> API_GW
-    
-    API_GW --> MS_Conta
-    API_GW --> MS_Risco
-    API_GW --> API_Abs
-    
-    MS_Conta --> New_Ledger
-    API_Abs --> Legacy_Loan
-    MS_Risco -.-> API_Abs
-
-    %% Estilização para destacar o Novo vs Legado
-    style New_Ledger fill:#1f6feb,stroke:#58a6ff,stroke-width:2px,color:#fff
-    style Legacy_Loan fill:#21262d,stroke:#30363d,stroke-dasharray: 5 5,color:#8b949e
-```
 
 ### 5.1 Detalhamento das Fases de Transição
 
